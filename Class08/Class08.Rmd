@@ -1,0 +1,209 @@
+---
+title: '"Machine Learning 1"'
+author: 'Rui Huang (PID: A15606522)'
+date: "10/21/2021"
+output: html_document
+---
+
+# Kmeans clustering
+
+```{r}
+tmp<-c(rnorm(30,-3), rnorm(30,3))
+x <- cbind(x=tmp,y=rev(tmp))
+plot(x)
+```
+> Q. can we use kmeans() to cluster this data setting k to 2 and nstart to 20?
+
+```{r}
+km <- kmeans(x, centers=2, nstart=20)
+km
+```
+
+>Q. How many points in each cluster?
+
+```{r}
+km$size
+```
+
+>Q. What "component" of your result object details cluster assignment/membership?
+
+```{r}
+km$cluster
+```
+
+> Q. What 'component' of your result object details cluster center>
+
+```{r}
+km$centers
+```
+
+> Q. Plot x colored by kmeans cluster assignment and add cluster cneters as blue pounts.
+
+```{r}
+plot(x, col=km$cluster)
+points(km$centers, col="blue", pch=15, cex=2)
+```
+
+# Hierarchical Clustering
+
+A big limitation with kmeans is that we have to tell it K(the number of clusters we want).
+
+```{r}
+hc <- hclust( dist(x) )
+hc 
+```
+
+There is a plot method for hclust result objects. let's see it.
+
+```{r}
+plot(hc)
+```
+To get our cluster membership vector we have to do a wee bit more work. We have to "cut" the tree where we think it make senses. For this we use the 'cutree()'function.
+
+```{r}
+cutree(hc,h=6)
+```
+
+You can also call 'cutree()' setting k=the number of grps/clusters you want.
+
+```{r}
+grps <- cutree(hc, k=2)
+```
+
+Make our results plot
+```{r}
+plot(x,col=grps)
+```
+
+# Q1. 17 rows and 5 columns, using dim() function
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url)
+dim(x)
+```
+
+```{r}
+x
+```
+```{r}
+rownames(x)<-x[,1]
+x<- x[,-1]
+head(x)
+```
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url, row.names=1)
+head(x)
+```
+# 17rows and 4 columns
+```{r}
+dim(x)
+```
+#Q2. I prefer using row.name=1, because x<-x[,-1]will remove the columns if I run it multiple time.
+
+#Q3. without "beside=T" will result in the plot below
+```{r}
+barplot(as.matrix(x), col=rainbow(nrow(x)))
+```
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+```
+
+#Q5.point lies on the diagonal means that the quantity of the food item is the same (or there is no specific preference shown)for the two pairing nations.
+```{r}
+pairs(x,col=rainbow(10), pch=16)
+```
+#Q6.2 food items have significant different quantity in N.Ireland comparing to three other nations.
+
+#PCA to the rescue
+
+The main function in base R for PCA is 'prcomp()'
+This want's the transpose of our data.
+```{r}
+pca <- prcomp(t(x))
+summary(pca)
+```
+
+```{r}
+attributes(pca)
+```
+#Q7.
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x))
+```
+
+#Q8.
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x), col=c("orange","red","blue","green"))
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+v <- round(pca$sdev^2/sum(pca$sdev^2)*100)
+v
+```
+```{r}
+z <- summary(pca)
+z$importance
+```
+```{r}
+barplot(v, xlab="Principal Component", ylab="Percent Variation")
+```
+
+```{r}
+par(mar=c(10,3,0.35,0))
+barplot(pca$rotation[,1],las=2)
+```
+
+#Q9. PC2 loading plot tell us as we move towards positive direction (Wales and N.Ireland), there is the increase amount in fresh potatoes, and as we move to the negative PC2 (Scotland) we see increase in the soft drink consumption.
+```{r}
+par(mar=c(10,3,0.35,0))
+barplot(pca$rotation[,2],las=2)
+```
+
+```{r}
+biplot(pca)
+```
+
+```{r}
+url2 <- "https://tinyurl.com/expression-CSV"
+rna.data <- read.csv(url2, row.names=1)
+head(rna.data)
+```
+```{r}
+dim(rna.data)
+```
+#Q10. 100 genes and 10 samples.
+
+```{r}
+pca<- prcomp(t(rna.data), scale=TRUE)
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
